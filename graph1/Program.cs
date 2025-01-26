@@ -11,7 +11,7 @@ var graph = new[,]
 };
 
 const int k = 3;
-var ga = new Coloring(graph, k);
+var ga = new Coloring(graph, k, Crossovers.CrossoverPmx, Mutations.InverseMutation);
 var solution = ga.Solve();
 if (solution != null)
 {

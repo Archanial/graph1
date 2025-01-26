@@ -2,10 +2,12 @@ using SkiaSharp;
 
 namespace graph1;
 
-public class Coloring(int[,] graph, int maxColors)
+public class Coloring(int[,] graph, int maxColors, Func<int[], int[], int[]> crossoverFunc, Action<int[]> mutationFunc)
 {
     private readonly int _numVertices = graph.GetLength(0);
+    
     private const int PopulationSize = 100;
+    
     private const int MaxGenerations = 1000;
 
     public int[] ColorGraph(int[] permutation)
@@ -40,53 +42,6 @@ public class Coloring(int[,] graph, int maxColors)
 
     private int Fitness(int[] permutation) => ColorGraph(permutation).Count(c => c == -1);
 
-    private int[] Crossover(int[] parent1, int[] parent2)
-    {
-        var child = new int[_numVertices];
-        var taken = new bool[_numVertices]; 
-        var rand = new Random();
-
-        // Copy random fragment
-        var start = rand.Next(0, _numVertices - 1);
-        var end = rand.Next(start + 1, _numVertices);
-
-        // Copy segment from parent1, -1 is unitialized
-        Array.Fill(child, -1);
-        for (var i = start; i < end; i++)
-        {
-            child[i] = parent1[i];
-            taken[parent1[i]] = true;
-        }
-
-        // Fill rest
-        var currentIndex = 0;
-        for (var i = 0; i < _numVertices; i++)
-        {
-            if (child[i] != -1)
-                continue;
-
-            while (taken[parent2[currentIndex]])
-            {
-                currentIndex++;
-                if (currentIndex >= _numVertices) 
-                    throw new IndexOutOfRangeException("Parent2 traversal exceeded bounds!"); // Safety check
-            }
-
-            child[i] = parent2[currentIndex];
-            currentIndex++;
-        }
-
-        return child;
-    }
-
-    private void ScrambleMutation(int[] individual)
-    {
-        var rand = new Random();
-        var start = rand.Next(0, _numVertices);
-        var end = rand.Next(start, _numVertices);
-        Array.Reverse(individual, start, end - start);
-    }
-
     public int[]? Solve()
     {
         var rand = new Random();
@@ -120,7 +75,7 @@ public class Coloring(int[,] graph, int maxColors)
             {
                 var parent1 = population[rand.Next(0, PopulationSize)];
                 var parent2 = population[rand.Next(0, PopulationSize)];
-                var child = Crossover(parent1, parent2);
+                var child = crossoverFunc(parent1, parent2);
                 newPopulation.Add(child);
             }
 
@@ -130,7 +85,7 @@ public class Coloring(int[,] graph, int maxColors)
                 // 10% chance for mutation
                 if (rand.NextDouble() < 0.1)
                 {
-                    ScrambleMutation(individual);
+                    mutationFunc(individual);
                 }
             }
 
