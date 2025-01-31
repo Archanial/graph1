@@ -2,7 +2,7 @@ using SkiaSharp;
 
 namespace graph1;
 
-public class Coloring(int[,] graph, int maxColors, Func<int[], int[], int[]> crossoverFunc, Action<int[]> mutationFunc)
+public sealed class Coloring(int[,] graph, int maxColors, Func<int[], int[], int[]> crossoverFunc, Action<int[]> mutationFunc)
 {
     private readonly int _numVertices = graph.GetLength(0);
     
